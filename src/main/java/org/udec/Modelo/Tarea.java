@@ -4,20 +4,17 @@ public class Tarea {
     private String mensaje;
     private String titulo;
     private EstadoTarea estado;
-    public Tarea(String mensaje, String titulo, EstadoTarea estado){
+    public Tarea(String mensaje, String titulo){
         if (mensaje == null || mensaje.isEmpty()) {
             throw new IllegalArgumentException("El mensaje no puede estar vacío");
         }
         if (titulo == null || titulo.isEmpty()) {
             throw new IllegalArgumentException("El título no puede estar vacío");
         }
-        if (estado == null) {
-            throw new IllegalArgumentException("El estado no puede ser nulo");
-        }
 
         this.mensaje = mensaje;
         this.titulo = titulo;
-        this.estado = estado;
+        this.estado = EstadoTarea.POR_HACER;
     }
 
     public void setEstado(EstadoTarea nuevoEstado){

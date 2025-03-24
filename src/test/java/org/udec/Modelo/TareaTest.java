@@ -17,13 +17,12 @@ class TareaTest {
     void setUp() {
         a = "";
         b = "Comprar";
-        c =EstadoTarea.POR_HACER;
     }
     @Test
 
     void TestConstructor(){
         assertThrows(IllegalArgumentException.class, () -> {
-            tarea = new Tarea(a, b, c);
+            tarea = new Tarea(a, b);
         });
     }
 
