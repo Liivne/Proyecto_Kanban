@@ -1,5 +1,7 @@
 package org.udec.Modelo;
 
+import static org.udec.Modelo.Tablero.p;
+
 public class Tarea {
     private String mensaje;
     private String titulo;

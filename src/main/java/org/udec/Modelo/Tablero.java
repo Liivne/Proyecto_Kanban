@@ -8,6 +8,12 @@ public class Tablero {
     private static Tablero instance;
     private Map<EstadoTarea, Columna> columnas;
 
+    static final Columna p = new Columna(EstadoTarea.POR_HACER);
+
+    public static void asignarColumna(Tarea tarea) {
+        p.agregarTarea(tarea); // Aquí se agrega a la columna "POR_HACER"
+    }
+
     // Constructor privado para el Singleton
     private Tablero() {
         columnas = new HashMap<>();

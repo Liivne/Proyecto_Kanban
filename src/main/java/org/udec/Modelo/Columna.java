@@ -16,7 +16,9 @@ public class Columna {
 
     public void eliminarTarea(Tarea t){tareas.remove(t);}
 
-    public void agregarTarea(Tarea t){tareas.add(t);}
+    public void agregarTarea(Tarea t){
+        tareas.add(t);
+    }
 
     public int contarTareas(){
         int total = 0 ;

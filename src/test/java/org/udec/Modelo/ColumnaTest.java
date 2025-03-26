@@ -42,14 +42,5 @@ class ColumnaTest {
         c.eliminarTarea(t1);
         assertEquals(2,c.contarTareas(),"La lista debería retornar 2");
     }
-    void testAsignacionClase(){
-        Tablero tablero = Tablero.getInstance();
-
-        Columna p = tablero.getColumna(EstadoTarea.POR_HACER);
-
-        Tarea t1 = new Tarea("Lavar la losa","Baja prioridad");
-        Tarea t2 = new Tarea("Pasear al perro","Hoy día");
-
-        System.out.println(p.contarTareas());}
     }
 

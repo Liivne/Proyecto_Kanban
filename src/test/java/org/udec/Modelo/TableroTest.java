@@ -11,20 +11,24 @@ public class TableroTest {
     @BeforeEach
     void setUp() {
         Tablero.resetInstance();
+
     }
 
+
     @Test
-    //dejaré el contarAllTareas para después
-    void TestcontarAllTareas() {
+    void testAsignacionClase(){
         Tablero tablero = Tablero.getInstance();
 
         Columna p = tablero.getColumna(EstadoTarea.POR_HACER);
         Columna e = tablero.getColumna(EstadoTarea.EN_PROCESO);
 
-        p.agregarTarea(new Tarea("Mensaje 1", "Descripción 1"));
-        e.agregarTarea(new Tarea("Mensaje 1", "Descripción 1"));
+        Tarea t1 = new Tarea("Lavar la losa","Baja prioridad");
+        Tarea t2 = new Tarea("Pasear al perro","Hoy día");
 
-        assertEquals(2,tablero.contarAllTareas(),"Deberían haber 2 tareas en total");
+        p.agregarTarea(t1);
+        e.agregarTarea(t2);
+
+        assertEquals(2,tablero.contarAllTareas());
     }
 
 
