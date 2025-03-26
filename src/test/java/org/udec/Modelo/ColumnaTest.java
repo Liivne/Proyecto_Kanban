@@ -3,8 +3,6 @@ package org.udec.Modelo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -31,7 +29,9 @@ class ColumnaTest {
         assertEquals(4, c.contarTareas(), "La lista con cuatro tareas debería retornar 4");
     }
 
+    @Test
     void testEliminarTarea(){
+
         Columna c = new Columna(EstadoTarea.POR_HACER);
         Tarea t1 = new Tarea("Mensaje 1", "Descripción 1");
         Tarea t2 = new Tarea("Mensaje 2", "Descripción 2");
@@ -40,7 +40,16 @@ class ColumnaTest {
         c.agregarTarea(t2);
         c.agregarTarea(t3);
         c.eliminarTarea(t1);
-        assertEquals(3,c.contarTareas(),"La lista debería retornar 3");
+        assertEquals(2,c.contarTareas(),"La lista debería retornar 2");
     }
+    void testAsignacionClase(){
+        Tablero tablero = Tablero.getInstance();
+
+        Columna p = tablero.getColumna(EstadoTarea.POR_HACER);
+
+        Tarea t1 = new Tarea("Lavar la losa","Baja prioridad");
+        Tarea t2 = new Tarea("Pasear al perro","Hoy día");
+
+        System.out.println(p.contarTareas());}
     }
 
