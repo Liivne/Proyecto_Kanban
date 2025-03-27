@@ -1,21 +1,54 @@
 package org.udec.Vista;
 
+import org.udec.Modelo.Columna;
+import org.udec.Modelo.EstadoTarea;
 import org.udec.Modelo.Tarea;
 import org.udec.Modelo.Tablero;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
+/**
+ * Ventana principal que representa el tablero Kanban. Contiene tres columnas de tareas
+ * ("POR HACER", "EN PROCESO", "HECHO"), y permite la creación y manipulación de tareas
+ * mediante la interacción con la interfaz gráfica.
+ *
+ * La ventana permite arrastrar y soltar tareas entre las diferentes columnas y actualizar
+ * la cantidad total de tareas. También proporciona la opción de crear nuevas tareas a través
+ * de un botón.
+ */
 public class ventanaPrincipal extends JFrame {
-    // Paneles para mostrar tareas
+    /**
+     * Panel que contiene las tareas con el estado "POR HACER".
+     */
     private JPanel panelPorHacer;
+
+    /**
+     * Panel que contiene las tareas con el estado "EN PROCESO".
+     */
     private JPanel panelEnProceso;
+
+    /**
+     * Panel que contiene las tareas con el estado "HECHO".
+     */
     private JPanel panelHecho;
+
+    /**
+     * Etiqueta que muestra el total de tareas en el tablero.
+     */
     private JLabel cantidadTareas;
 
+    /**
+     * Crea la ventana principal, configura los paneles de las columnas y los elementos de la interfaz.
+     */
     public ventanaPrincipal(){
         super();
         this.setTitle("Tablero Kanban");
@@ -23,51 +56,51 @@ public class ventanaPrincipal extends JFrame {
         this.setSize(1000, 800);
         this.setLayout(new BorderLayout());
 
-        // Panel contenedor con GridLayout para organizar las columnas
+        // Panel central con columnas
         JPanel panelCentral = new JPanel(new GridLayout(1, 3, 10, 10));
 
-        // Inicializar paneles para cada columna
+        // Inicialización de los paneles
         panelPorHacer = new JPanel();
         panelEnProceso = new JPanel();
         panelHecho = new JPanel();
 
-        // Configurar paneles de columnas
+        // Configuración de los paneles de tareas
         panelPorHacer.setLayout(new BoxLayout(panelPorHacer, BoxLayout.Y_AXIS));
         panelEnProceso.setLayout(new BoxLayout(panelEnProceso, BoxLayout.Y_AXIS));
         panelHecho.setLayout(new BoxLayout(panelHecho, BoxLayout.Y_AXIS));
 
-        // Establecer colores y bordes
+        // Colores y bordes de los paneles
         panelPorHacer.setBackground(Color.GREEN);
         panelEnProceso.setBackground(Color.BLUE);
         panelHecho.setBackground(Color.RED);
 
+
+        // Agregar bordes con títulos a cada columna
         panelPorHacer.setBorder(new TitledBorder("POR HACER"));
         panelEnProceso.setBorder(new TitledBorder("EN PROCESO"));
         panelHecho.setBorder(new TitledBorder("HECHO"));
 
-        // Agregar las columnas al panel central
+        // Agregar columnas al panel central
         panelCentral.add(panelPorHacer);
         panelCentral.add(panelEnProceso);
         panelCentral.add(panelHecho);
 
         this.add(panelCentral, BorderLayout.CENTER);
 
-        // Panel para el botón en la parte inferior
+        // Panel inferior para botón y contador de tareas
         JPanel panelInferior = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
-        // Panel para cantidad de tareas totales
+        // Contador de tareas
         cantidadTareas = new JLabel("Cantidad de tareas: " + Tablero.getInstance().contarAllTareas());
         panelInferior.add(cantidadTareas);
 
+        // Botón para crear tarea
         JButton btnCrearTarea = new JButton("Crear Tarea");
 
-        // Agregar evento al botón
-        btnCrearTarea.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ventanaTareas ventana = new ventanaTareas(ventanaPrincipal.this);
-                ventana.setVisible(true);
-            }
+        // Acción del botón para crear nueva tarea
+        btnCrearTarea.addActionListener(e -> {
+            ventanaTareas ventana = new ventanaTareas(ventanaPrincipal.this);
+            ventana.setVisible(true);
         });
         panelInferior.add(btnCrearTarea);
 
@@ -77,7 +110,143 @@ public class ventanaPrincipal extends JFrame {
     }
 
 
-    // Método para crear el panel de una tarea
+    /**
+     * Agrega visualmente una tarea al panel correspondiente según su estado.
+     *
+     * @param tarea La tarea a agregar visualmente.
+     */
+    public void agregarTareaVisualmente(Tarea tarea) {
+        JPanel panelDestino = obtenerPanelSegunEstado(tarea);
+        JPanel panelTarea = crearPanelTarea(tarea);
+
+        panelDestino.add(panelTarea);
+        panelDestino.revalidate();
+        panelDestino.repaint();
+    }
+
+    /**
+     * Obtiene el panel correspondiente según el estado de la tarea.
+     *
+     * @param tarea La tarea cuyo estado se verifica.
+     * @return El panel correspondiente al estado de la tarea.
+     */
+    private JPanel obtenerPanelSegunEstado(Tarea tarea) {
+        return switch (tarea.getEstado()) {
+            case EN_PROCESO -> panelEnProceso;
+            case HECHO -> panelHecho;
+            default -> panelPorHacer;
+        };
+    }
+
+    private void eliminarTarea(Tarea tarea) {
+        // Eliminar visualmente la tarea del panel
+        JPanel panelDestino = obtenerPanelSegunEstado(tarea);
+        Component[] componentes = panelDestino.getComponents();
+
+        for (Component componente : componentes) {
+            if (componente instanceof JPanel) {
+                JPanel panelTarea = (JPanel) componente;
+                // Verificar si el panel corresponde a la tarea a eliminar
+                JLabel labelTitulo = (JLabel) panelTarea.getComponent(0);
+                if (labelTitulo.getText().equals("Título: " + tarea.getTitulo())) {
+                    panelDestino.remove(panelTarea);
+                    break;
+                }
+            }
+        }
+
+        // Actualizar la vista
+        panelDestino.revalidate();
+        panelDestino.repaint();
+
+        // Actualizar el contador de tareas
+        actualizarContadorTareas();
+    }
+
+
+
+
+    /**
+     * Actualiza el contador de tareas mostrando el número total de tareas en el tablero.
+     */
+    public void actualizarContadorTareas() {
+        cantidadTareas.setText("Cantidad de tareas: " + Tablero.getInstance().contarAllTareas());
+    }
+
+    private void configurarAccionesTarea(JPanel panelTarea, Tarea tarea) {
+        panelTarea.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON3) { // Click derecho
+                    moverTareaADerecha(tarea);
+                } else if (e.getButton() == MouseEvent.BUTTON1) { // Click izquierdo
+                    moverTareaAIzquierda(tarea);
+                }
+            }
+        });
+
+        // Agregar KeyListener para borrar con barra espaciadora
+        panelTarea.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    eliminarTarea(tarea);
+                }
+            }
+        });
+
+        // Asegurar que el panel pueda recibir foco para el KeyListener
+        panelTarea.setFocusable(true);
+    }
+
+    private void moverTareaADerecha(Tarea tarea) {
+        EstadoTarea estadoActual = tarea.getEstado();
+        EstadoTarea nuevoEstado;
+
+        switch (estadoActual) {
+            case EstadoTarea.POR_HACER:
+                Tablero.getInstance().moverTarea(tarea,Tablero.getInstance().getColumna(EstadoTarea.EN_PROCESO));
+                break;
+            case EstadoTarea.EN_PROCESO:
+                Tablero.getInstance().moverTarea(tarea,Tablero.getInstance().getColumna(EstadoTarea.HECHO));
+                break;
+            case EstadoTarea.HECHO:
+                // Si ya está en el último estado, no hacer nada
+                return;
+            default:
+                return;
+        }
+
+        // Actualizar la vista
+        actualizarVistaTarea(tarea);
+    }
+
+    private void moverTareaAIzquierda(Tarea tarea) {
+        EstadoTarea estadoActual = tarea.getEstado();
+        EstadoTarea nuevoEstado;
+
+        switch (estadoActual) {
+            case HECHO:
+                nuevoEstado = EstadoTarea.EN_PROCESO;
+                break;
+            case EN_PROCESO:
+                nuevoEstado = EstadoTarea.POR_HACER;
+                break;
+            case POR_HACER:
+                // Si ya está en el primer estado, no hacer nada
+                return;
+            default:
+                return;
+        }
+
+        // Cambiar el estado de la tarea
+        tarea.setEstado(nuevoEstado);
+
+        // Actualizar la vista
+        actualizarVistaTarea(tarea);
+    }
+
+    // Modificar el método crearPanelTarea para incluir estas configuraciones
     private JPanel crearPanelTarea(Tarea tarea) {
         JPanel panelTarea = new JPanel();
         panelTarea.setLayout(new BoxLayout(panelTarea, BoxLayout.Y_AXIS));
@@ -89,34 +258,38 @@ public class ventanaPrincipal extends JFrame {
         panelTarea.add(labelTitulo);
         panelTarea.add(labelMensaje);
 
+        // Configurar acciones de ratón y teclado
+        configurarAccionesTarea(panelTarea, tarea);
+
         return panelTarea;
     }
 
-    // Método para agregar visualmente una tarea al panel correcto
-    public void agregarTareaVisualmente(Tarea tarea) {
-        JPanel panelDestino = obtenerPanelSegunEstado(tarea);
-        JPanel panelTarea = crearPanelTarea(tarea);
+    private void actualizarVistaTarea(Tarea tarea) {
+        // Eliminar la tarea del panel actual
+        JPanel panelActual = obtenerPanelSegunEstado(tarea);
+        Component[] componentes = panelActual.getComponents();
 
-        panelDestino.add(panelTarea);
-        panelDestino.revalidate();
-        panelDestino.repaint();
-    }
-
-    // Método para obtener el panel según el estado de la tarea
-    private JPanel obtenerPanelSegunEstado(Tarea tarea) {
-        switch (tarea.getEstado()) {
-            case POR_HACER:
-                return panelPorHacer;
-            case EN_PROCESO:
-                return panelEnProceso;
-            case HECHO:
-                return panelHecho;
-            default:
-                return panelPorHacer;
+        for (Component componente : componentes) {
+            if (componente instanceof JPanel) {
+                JPanel panelTarea = (JPanel) componente;
+                // Verificar si el panel corresponde a la tarea a mover
+                JLabel labelTitulo = (JLabel) panelTarea.getComponent(0);
+                if (labelTitulo.getText().equals("Título: " + tarea.getTitulo())) {
+                    panelActual.remove(panelTarea);
+                    break;
+                }
+            }
         }
-    }
 
-    public void actualizarContadorTareas() {
-        cantidadTareas.setText("Cantidad de tareas: " + Tablero.getInstance().contarAllTareas());
+        // Actualizar la vista del panel actual
+        panelActual.revalidate();
+        panelActual.repaint();
+
+        // Agregar la tarea al nuevo panel
+        agregarTareaVisualmente(tarea);
+
+        // Actualizar el contador de tareas
+        actualizarContadorTareas();
     }
 }
+

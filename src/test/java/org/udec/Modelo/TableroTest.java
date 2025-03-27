@@ -11,7 +11,6 @@ public class TableroTest {
     @BeforeEach
     void setUp() {
         Tablero.resetInstance();
-
     }
 
 
@@ -50,6 +49,20 @@ public class TableroTest {
         Tarea tareaAsignada = columnaPorHacer.getTareas().getFirst();
         assertEquals("Test Tarea", titulo, tareaAsignada.getTitulo());
         assertEquals("Descripción de la tarea", mensaje, tareaAsignada.getMensaje());
+    }
+    @Test
+    void testMoverTarea() {
+        Tarea tarea = new Tarea("Implementar prueba","Prueba");
+        Columna columnaToDo = new Columna(EstadoTarea.POR_HACER);
+        Columna columnaDone = new Columna(EstadoTarea.HECHO);
+        // Verificar que la tarea comienza con el estado correcto
+        assertEquals(EstadoTarea.POR_HACER, tarea.getEstado());
+
+        // Mover la tarea a la columna "Done"
+        Tablero.getInstance().moverTarea(tarea, columnaDone);
+
+        // Verificar que el estado de la tarea ha cambiado
+        assertEquals(EstadoTarea.HECHO, tarea.getEstado());
     }
 
 
