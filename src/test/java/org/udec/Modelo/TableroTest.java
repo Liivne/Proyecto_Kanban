@@ -16,7 +16,7 @@ public class TableroTest {
 
 
     @Test
-    void testAsignacionClase(){
+    void testAgregarTarea(){
         Tablero tablero = Tablero.getInstance();
 
         Columna p = tablero.getColumna(EstadoTarea.POR_HACER);
@@ -29,6 +29,27 @@ public class TableroTest {
         e.agregarTarea(t2);
 
         assertEquals(2,tablero.contarAllTareas());
+    }
+    @Test
+    public void testAsignarColumna() {
+        // Crear una tarea
+        String titulo = "Test Tarea";
+        String mensaje = "Descripción de la tarea";
+        Tarea tarea = new Tarea(mensaje, titulo);
+
+        // Asignar la tarea a la columna POR_HACER
+        Tablero.asignarColumna(tarea);
+
+        // Verificar que la tarea fue añadida a la columna correcta (POR_HACER)
+        Columna columnaPorHacer = Tablero.getInstance().getColumna(EstadoTarea.POR_HACER);
+
+        // Verificar que la tarea está en la columna correcta
+        assertTrue(columnaPorHacer.contarTareas() == 1, "La tarea no fue asignada correctamente a POR_HACER");
+
+        // Verificar que la tarea asignada tiene el mismo título
+        Tarea tareaAsignada = columnaPorHacer.getTareas().getFirst();
+        assertEquals("Test Tarea", titulo, tareaAsignada.getTitulo());
+        assertEquals("Descripción de la tarea", mensaje, tareaAsignada.getMensaje());
     }
 
 

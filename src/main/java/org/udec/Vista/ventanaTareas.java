@@ -9,13 +9,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class ventanaTareas extends JDialog {
+    private ventanaPrincipal parent;
     private JTextField tituloField;
     private JTextArea mensajeArea;
     private JButton btnAceptar;
     private JButton btnCancelar;
 
-    public ventanaTareas(JFrame parent) {
+    public ventanaTareas(ventanaPrincipal parent) {
         super(parent, "Añadir Tarea", true);
+        this.parent = parent;
         setSize(300, 200);
         setLayout(new GridBagLayout());
         setLocationRelativeTo(parent);
@@ -29,7 +31,6 @@ public class ventanaTareas extends JDialog {
         add(tituloField);
 
         // Campo para el mensaje
-
         mensajeArea = new JTextArea();
         mensajeArea.setPreferredSize(new Dimension(200, 60)); // Set preferred size
         gbc.gridx = 0;
@@ -63,6 +64,8 @@ public class ventanaTareas extends JDialog {
                 if (!titulo.isEmpty() && !mensaje.isEmpty()) {
                     Tarea nuevaTarea = new Tarea(mensaje, titulo);
                     Tablero.asignarColumna(nuevaTarea);
+                    parent.actualizarContadorTareas();
+                    JPanel tarjeta = crearPanelTarea(nuevaTarea);
                     dispose(); // Cerrar el diálogo
                 } else {
                     JOptionPane.showMessageDialog(ventanaTareas.this, "Todos los campos son obligatorios.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -73,4 +76,14 @@ public class ventanaTareas extends JDialog {
         // Acción del botón Cancelar
         btnCancelar.addActionListener(e -> dispose());
     }
+    public JPanel crearPanelTarea(Tarea tarea) {
+        JPanel panelTarea = new JPanel();
+        panelTarea.setLayout(new BoxLayout(panelTarea, BoxLayout.Y_AXIS));
+        panelTarea.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
+        panelTarea.add(new JLabel("Título: " + tarea.getTitulo()));
+        panelTarea.add(new JLabel("Descripción: " + tarea.getMensaje()));
+        panelTarea.setPreferredSize(new Dimension(200, 100));
+        return panelTarea;
+    }
+
 }

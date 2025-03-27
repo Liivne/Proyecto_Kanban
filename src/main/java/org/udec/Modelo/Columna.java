@@ -25,4 +25,7 @@ public class Columna {
         for(Tarea tarea: tareas){total++;}
         return total;
     }
+    public List<Tarea> getTareas(){
+        return tareas;
+    }
 }

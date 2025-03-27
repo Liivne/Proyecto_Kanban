@@ -8,6 +8,7 @@ public class Main {
 
         Tarea t1 = new Tarea("Lavar la losa","Baja prioridad");
         Tablero.asignarColumna(t1);
+
         Tarea t2 = new Tarea("Pasear al perro","Hoy día");
         Tablero.asignarColumna(t2);
 
