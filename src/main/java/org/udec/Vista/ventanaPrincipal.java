@@ -1,8 +1,6 @@
 package org.udec.Vista;
 
 import org.udec.Modelo.Tarea;
-import org.udec.Modelo.Columna;
-import org.udec.Modelo.EstadoTarea;
 import org.udec.Modelo.Tablero;
 
 import javax.swing.*;
@@ -39,9 +37,9 @@ public class ventanaPrincipal extends JFrame {
         panelHecho.setLayout(new BoxLayout(panelHecho, BoxLayout.Y_AXIS));
 
         // Establecer colores y bordes
-        panelPorHacer.setBackground(Color.RED);
-        panelEnProceso.setBackground(Color.GREEN);
-        panelHecho.setBackground(Color.BLUE);
+        panelPorHacer.setBackground(Color.GREEN);
+        panelEnProceso.setBackground(Color.BLUE);
+        panelHecho.setBackground(Color.RED);
 
         panelPorHacer.setBorder(new TitledBorder("POR HACER"));
         panelEnProceso.setBorder(new TitledBorder("EN PROCESO"));
@@ -56,15 +54,12 @@ public class ventanaPrincipal extends JFrame {
 
         // Panel para el botón en la parte inferior
         JPanel panelInferior = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton btnCrearTarea = new JButton("Crear Tarea");
 
         // Panel para cantidad de tareas totales
         cantidadTareas = new JLabel("Cantidad de tareas: " + Tablero.getInstance().contarAllTareas());
         panelInferior.add(cantidadTareas);
 
-        this.add(panelInferior, BorderLayout.SOUTH);
-
-
+        JButton btnCrearTarea = new JButton("Crear Tarea");
 
         // Agregar evento al botón
         btnCrearTarea.addActionListener(new ActionListener() {
@@ -75,25 +70,10 @@ public class ventanaPrincipal extends JFrame {
             }
         });
         panelInferior.add(btnCrearTarea);
+
         this.add(panelInferior, BorderLayout.SOUTH);
 
         this.setVisible(true);
-    }
-
-    // Método para agregar una tarea
-    public void agregarTarea(Tarea tarea) {
-        // Usar el Tablero para agregar la tarea
-        Tablero.asignarColumna(tarea);
-
-        // Crear un panel para la tarea
-        JPanel panelTarea = crearPanelTarea(tarea);
-
-        // Añadir el panel de la tarea a la columna POR_HACER
-        panelPorHacer.add(panelTarea);
-
-        // Refrescar la vista
-        panelPorHacer.revalidate();
-        panelPorHacer.repaint();
     }
 
 
@@ -111,6 +91,31 @@ public class ventanaPrincipal extends JFrame {
 
         return panelTarea;
     }
+
+    // Método para agregar visualmente una tarea al panel correcto
+    public void agregarTareaVisualmente(Tarea tarea) {
+        JPanel panelDestino = obtenerPanelSegunEstado(tarea);
+        JPanel panelTarea = crearPanelTarea(tarea);
+
+        panelDestino.add(panelTarea);
+        panelDestino.revalidate();
+        panelDestino.repaint();
+    }
+
+    // Método para obtener el panel según el estado de la tarea
+    private JPanel obtenerPanelSegunEstado(Tarea tarea) {
+        switch (tarea.getEstado()) {
+            case POR_HACER:
+                return panelPorHacer;
+            case EN_PROCESO:
+                return panelEnProceso;
+            case HECHO:
+                return panelHecho;
+            default:
+                return panelPorHacer;
+        }
+    }
+
     public void actualizarContadorTareas() {
         cantidadTareas.setText("Cantidad de tareas: " + Tablero.getInstance().contarAllTareas());
     }

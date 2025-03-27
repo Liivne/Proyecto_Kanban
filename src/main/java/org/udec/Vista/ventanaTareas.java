@@ -65,7 +65,7 @@ public class ventanaTareas extends JDialog {
                     Tarea nuevaTarea = new Tarea(mensaje, titulo);
                     Tablero.asignarColumna(nuevaTarea);
                     parent.actualizarContadorTareas();
-                    JPanel tarjeta = crearPanelTarea(nuevaTarea);
+                    parent.agregarTareaVisualmente(nuevaTarea);
                     dispose(); // Cerrar el diálogo
                 } else {
                     JOptionPane.showMessageDialog(ventanaTareas.this, "Todos los campos son obligatorios.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -85,5 +85,6 @@ public class ventanaTareas extends JDialog {
         panelTarea.setPreferredSize(new Dimension(200, 100));
         return panelTarea;
     }
-
 }
+
+
