@@ -1,5 +1,7 @@
 package org.udec.Modelo;
 
+import java.io.Serializable;
+
 /**
  * Representa una tarea dentro de un sistema de gestión de tareas, como un tablero Kanban.
  *
@@ -9,15 +11,13 @@ package org.udec.Modelo;
  * La clase proporciona métodos para obtener y modificar el estado de la tarea, así como
  * para acceder a su título y mensaje.
  */
-public class Tarea {
+public class Tarea implements Serializable {
     /**
-     * El mensaje que describe la tarea.
+     * Versión de serialización para manejar compatibilidad
      */
-    private String mensaje;
+    private static final long serialVersionUID = 1L;
 
-    /**
-     * El título que da nombre a la tarea.
-     */
+    private String mensaje;
     private String titulo;
 
     /**

@@ -1,10 +1,15 @@
 package org.udec.Modelo;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class Columna {
+public class Columna implements Serializable {
+    /**
+     * Versión de serialización para manejar compatibilidad
+     */
+    private static final long serialVersionUID = 1L;
     /**
      * El estado de las tareas dentro de esta columna.
      */

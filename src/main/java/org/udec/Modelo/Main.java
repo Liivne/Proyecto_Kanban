@@ -1,21 +1,24 @@
 package org.udec.Modelo;
 
 import org.udec.Vista.ventanaPrincipal;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 
 public class Main {
     public static void main(String[] args) {
-
-        Tarea t1 = new Tarea("Lavar la losa", "Baja prioridad");
-        Tablero.asignarColumna(t1);
-
-        Tarea t2 = new Tarea("Pasear al perro", "Hoy día");
-        Tablero.asignarColumna(t2);
-
-        // Crear ventana principal
+        Tablero tablero = null;
         ventanaPrincipal ventana = new ventanaPrincipal();
 
-        // Agregar las tareas visualmente
-        ventana.agregarTareaVisualmente(t1);
-        ventana.agregarTareaVisualmente(t2);
-    }
-}
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("tableroKanban.ser"))) {
+            tablero = (Tablero) ois.readObject();
+            System.out.println("Tablero Kanban cargado exitosamente.");
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Error al cargar el tablero Kanban: " + e.getMessage());
+        }
+
+        if (tablero != null) {
+            // Aquí puedes usar el tablero, por ejemplo, imprimir las tareas
+            ventana.cargarTablero();
+
+}}}

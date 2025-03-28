@@ -1,5 +1,7 @@
 package org.udec.Modelo;
 
+import java.io.Serializable;
+
 /**
  * Enum que representa los diferentes estados de una tarea dentro de un tablero Kanban.
  *
@@ -13,7 +15,7 @@ package org.udec.Modelo;
  * Este enum es utilizado para asignar y gestionar el estado de las tareas en el tablero Kanban.
  *
  */
-public enum EstadoTarea {
+public enum EstadoTarea implements Serializable {
     /**
      * Estado que indica que la tarea aún no ha comenzado.
      */

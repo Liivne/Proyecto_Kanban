@@ -10,6 +10,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 
 /**
  * Ventana principal que representa el tablero Kanban. Contiene tres columnas de tareas
@@ -29,17 +30,17 @@ public class ventanaPrincipal extends JFrame {
     /**
      * Panel que contiene las tareas con el estado "EN PROCESO".
      */
-    private JPanel panelEnProceso;
+    private final JPanel panelEnProceso;
 
     /**
      * Panel que contiene las tareas con el estado "HECHO".
      */
-    private JPanel panelHecho;
+    private final JPanel panelHecho;
 
     /**
      * Etiqueta que muestra el total de tareas en el tablero.
      */
-    private JLabel cantidadTareas;
+    private final JLabel cantidadTareas;
 
     /**
      * Crea la ventana principal, configura los paneles de las columnas y los elementos de la interfaz.
@@ -50,6 +51,9 @@ public class ventanaPrincipal extends JFrame {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setSize(1000, 800);
         this.setLayout(new BorderLayout());
+
+        // Crear serialización
+        crearMenuSerializacion();
 
         // Panel central con columnas
         JPanel panelCentral = new JPanel(new GridLayout(1, 3, 10, 10));
@@ -104,6 +108,127 @@ public class ventanaPrincipal extends JFrame {
         this.setVisible(true);
     }
 
+    /**
+     * Crea el menú de serialización para guardar y cargar tableros
+     */
+    private void crearMenuSerializacion() {
+        JMenuBar menuBar = new JMenuBar();
+        JMenu menuArchivo = new JMenu("Archivo");
+
+        // Ítem para guardar tablero
+        JMenuItem itemGuardar = new JMenuItem("Guardar Tablero");
+        itemGuardar.addActionListener(e -> guardarTablero());
+
+        // Ítem para cargar tablero
+        JMenuItem itemCargar = new JMenuItem("Cargar Tablero");
+        itemCargar.addActionListener(e -> cargarTablero());
+
+        menuArchivo.add(itemGuardar);
+        menuArchivo.add(itemCargar);
+
+        menuBar.add(menuArchivo);
+        this.setJMenuBar(menuBar);
+    }
+
+    /**
+     * Guarda el tablero actual en un archivo
+     */
+    private void guardarTablero() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Guardar Tablero Kanban");
+
+        int userSelection = fileChooser.showSaveDialog(this);
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToSave = fileChooser.getSelectedFile();
+
+            // Asegurar extensión .kanban
+            String rutaArchivo = fileToSave.getAbsolutePath();
+            if (!rutaArchivo.toLowerCase().endsWith(".kanban")) {
+                rutaArchivo += ".kanban";
+            }
+
+            // Guardar tablero
+            Tablero.getInstance().guardarTablero(rutaArchivo);
+
+            JOptionPane.showMessageDialog(this,
+                    "Tablero guardado exitosamente",
+                    "Guardar Tablero",
+                    JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    /**
+     * Carga un tablero desde un archivo
+     */
+    public void cargarTablero() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Cargar Tablero Kanban");
+
+        int userSelection = fileChooser.showOpenDialog(this);
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToLoad = fileChooser.getSelectedFile();
+
+            // Limpiar paneles actuales
+            limpiarPaneles();
+
+            // Cargar tablero
+            Tablero tableroNuevo = Tablero.cargarTablero(fileToLoad.getAbsolutePath());
+
+            if (tableroNuevo != null) {
+                // Repoblar paneles con las tareas cargadas
+                cargarTareasExistentes();
+
+                JOptionPane.showMessageDialog(this,
+                        "Tablero cargado exitosamente",
+                        "Cargar Tablero",
+                        JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "No se pudo cargar el tablero",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    /**
+     * Limpia todos los paneles de tareas
+     */
+    private void limpiarPaneles() {
+        panelPorHacer.removeAll();
+        panelEnProceso.removeAll();
+        panelHecho.removeAll();
+
+        panelPorHacer.revalidate();
+        panelEnProceso.revalidate();
+        panelHecho.revalidate();
+
+        panelPorHacer.repaint();
+        panelEnProceso.repaint();
+        panelHecho.repaint();
+    }
+
+    /**
+     * Carga las tareas existentes en los paneles correspondientes
+     */
+    private void cargarTareasExistentes() {
+        // Cargar tareas de cada columna
+        Tablero.getInstance().getColumna(EstadoTarea.POR_HACER)
+                .getTareas().forEach(this::agregarTareaVisualmente);
+
+        Tablero.getInstance().getColumna(EstadoTarea.EN_PROCESO)
+                .getTareas().forEach(this::agregarTareaVisualmente);
+
+        Tablero.getInstance().getColumna(EstadoTarea.HECHO)
+                .getTareas().forEach(this::agregarTareaVisualmente);
+
+        // Actualizar contador de tareas
+        actualizarContadorTareas();
+    }
+
+
 
     /**
      * Agrega visualmente una tarea al panel correspondiente según su estado.
@@ -134,11 +259,13 @@ public class ventanaPrincipal extends JFrame {
     }
 
     private void eliminarTarea(Tarea tarea) {
+        System.out.println("Método eliminarTarea llamado para: " + tarea.getTitulo());
+
         // Eliminar visualmente la tarea del panel
         JPanel panelDestino = obtenerPanelSegunEstado(tarea);
         Component[] componentes = panelDestino.getComponents();
 
-        JPanel panelTarea = null;
+        JPanel panelTarea;
         for (Component componente : componentes) {
             if (componente instanceof JPanel) {
                 panelTarea = (JPanel) componente;
@@ -167,9 +294,19 @@ public class ventanaPrincipal extends JFrame {
     }
 
     private void configurarAccionesTarea(JPanel panelTarea, Tarea tarea) {
+        // Agregar foco al panel para que pueda recibir eventos de teclado
+        panelTarea.setFocusable(true);
+
+        // Listener del mouse para aladir tareas
         panelTarea.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                // Agregar mensaje de depuración
+                System.out.println("Panel de tarea clickeado: " + tarea.getTitulo());
+
+                // Solicitar foco para el panel
+                panelTarea.requestFocusInWindow();
+
                 if (e.getButton() == MouseEvent.BUTTON3) { // Click derecho
                     moverTareaADerecha(tarea);
                 } else if (e.getButton() == MouseEvent.BUTTON1) { // Click izquierdo
@@ -178,29 +315,43 @@ public class ventanaPrincipal extends JFrame {
             }
         });
 
-        // Agregar KeyListener para borrar con barra espaciadora
+        // KeyListener para borrar con barra espaciadora
         panelTarea.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                    eliminarTarea(tarea);
+                // Agregar mensaje de depuración
+                System.out.println("Tecla presionada: " + e.getKeyCode() + " en tarea: " + tarea.getTitulo());
+                if (e.getKeyCode() == KeyEvent.VK_DELETE) {
+                    // Mostrar diálogo de confirmación
+                    int respuesta = JOptionPane.showConfirmDialog(
+                            ventanaPrincipal.this,
+                            "¿Estás seguro de que quieres eliminar esta tarea?",
+                            "Confirmar eliminación",
+                            JOptionPane.YES_NO_OPTION
+                    );
+
+                    System.out.println("Respuesta de confirmación: " + respuesta);
+
+                    if(respuesta == JOptionPane.YES_OPTION){
+                        Tablero.getInstance().getColumna(tarea.getEstado()).eliminarTarea(tarea);
+                        eliminarTarea(tarea);
+                    }
+
                 }
             }
         });
-
-        // Asegurar que el panel pueda recibir foco para el KeyListener
-        panelTarea.setFocusable(true);
     }
 
     private void moverTareaADerecha(Tarea tarea) {
-        eliminarTarea(tarea);
         EstadoTarea estadoActual = tarea.getEstado();
 
         switch (estadoActual) {
             case EstadoTarea.POR_HACER:
+                eliminarTarea(tarea);
                 Tablero.getInstance().moverTarea(tarea,Tablero.getInstance().getColumna(EstadoTarea.EN_PROCESO));
                 break;
             case EstadoTarea.EN_PROCESO:
+                eliminarTarea(tarea);
                 Tablero.getInstance().moverTarea(tarea,Tablero.getInstance().getColumna(EstadoTarea.HECHO));
                 break;
             case EstadoTarea.HECHO:
@@ -215,15 +366,16 @@ public class ventanaPrincipal extends JFrame {
     }
 
     private void moverTareaAIzquierda(Tarea tarea) {
-        eliminarTarea(tarea);
         EstadoTarea estadoActual = tarea.getEstado();
         EstadoTarea nuevoEstado;
 
         switch (estadoActual) {
             case HECHO:
+                eliminarTarea(tarea);
                 nuevoEstado = EstadoTarea.EN_PROCESO;
                 break;
             case EN_PROCESO:
+                eliminarTarea(tarea);
                 nuevoEstado = EstadoTarea.POR_HACER;
                 break;
             case POR_HACER:
@@ -286,4 +438,3 @@ public class ventanaPrincipal extends JFrame {
         actualizarContadorTareas();
     }
 }
-

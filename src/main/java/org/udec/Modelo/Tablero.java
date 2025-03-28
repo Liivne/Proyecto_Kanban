@@ -1,43 +1,25 @@
 package org.udec.Modelo;
 
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Representa un tablero Kanban que contiene las distintas columnas de tareas.
- * Utiliza el patrón de diseño Singleton para garantizar que haya una única instancia
- * del tablero que almacene los estados de las tareas y las columnas asociadas a cada uno.
- *
- * El tablero contiene tres columnas predeterminadas para representar los estados:
- * <ul>
- *     <li><b>POR_HACER:</b> Tareas que aún no han comenzado.</li>
- *     <li><b>EN_PROCESO:</b> Tareas que están en progreso.</li>
- *     <li><b>HECHO:</b> Tareas que han sido completadas.</li>
- * </ul>
- *
- * Esta clase ofrece métodos para agregar tareas a columnas, mover tareas entre columnas,
- * contar el total de tareas y obtener las columnas del tablero.
- */
-public class Tablero {
+public class Tablero implements Serializable {
     /**
-     * Instancia única del tablero (patrón Singleton).
+     * Versión de serialización para manejar compatibilidad
      */
-    private static Tablero instance;
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * Instancia única del tablero (patrón Singleton)
+     */
+    private static transient Tablero instance;
 
     /**
      * Mapa que contiene las columnas del tablero, donde cada clave es un estado de tarea
      * y su valor es la columna correspondiente.
      */
-    private Map<EstadoTarea, Columna> columnas;
-
-    /**
-     * Asigna una tarea a la columna correspondiente según su estado "POR_HACER".
-     *
-     * @param tarea La tarea que se agregará a la columna "POR_HACER".
-     */
-    public static void asignarColumna(Tarea tarea) {
-        Tablero.getInstance().getColumna(EstadoTarea.POR_HACER).agregarTarea(tarea);
-    }
+    private final Map<EstadoTarea, Columna> columnas;
 
     /**
      * Constructor privado para el patrón Singleton. Inicializa las columnas predeterminadas
@@ -50,26 +32,25 @@ public class Tablero {
         columnas.put(EstadoTarea.HECHO, new Columna(EstadoTarea.HECHO));
     }
 
+    /**
+     * Asigna una tarea a la columna correspondiente según su estado "POR_HACER".
+     *
+     * @param tarea La tarea que se agregará a la columna "POR_HACER".
+     */
+    public static void asignarColumna(Tarea tarea) {
+        getInstance().getColumna(EstadoTarea.POR_HACER).agregarTarea(tarea);
+    }
 
     /**
      * Obtiene la única instancia del tablero (Singleton).
      *
      * @return La instancia única del tablero.
      */
-    public static Tablero getInstance() {
+    public static synchronized Tablero getInstance() {
         if (instance == null) {
-            instance = new Tablero(); // Crea la instancia si no existe
+            instance = new Tablero();
         }
         return instance;
-    }
-
-    /**
-     * Agrega una nueva columna al tablero.
-     *
-     * @param columna La columna que se agregará al tablero.
-     */
-    public void agregarColumna(Columna columna) {
-        columnas.put(columna.getEstado(), columna);
     }
 
     /**
@@ -89,7 +70,14 @@ public class Tablero {
      * @param columna La columna a la que se moverá la tarea.
      */
     public void moverTarea(Tarea t, Columna columna) {
+        // Eliminar de la columna original
+        getColumna(t.getEstado()).eliminarTarea(t);
+
+        // Cambiar estado
         t.setEstado(columna.getEstado());
+
+        // Agregar a nueva columna
+        columna.agregarTarea(t);
     }
 
     /**
@@ -110,6 +98,52 @@ public class Tablero {
      */
     public static void resetInstance() {
         instance = null;
+    }
+
+    /**
+     * Guarda el tablero en un archivo
+     *
+     * @param rutaArchivo Ruta del archivo de guardado
+     */
+    public void guardarTablero(String rutaArchivo) {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(rutaArchivo))) {
+            out.writeObject(this);
+            System.out.println("Tablero guardado exitosamente en: " + rutaArchivo);
+        } catch (IOException e) {
+            System.err.println("Error al guardar el tablero: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Carga un tablero desde un archivo
+     *
+     * @param rutaArchivo Ruta del archivo a cargar
+     * @return Tablero cargado, o null si hay un error
+     */
+    public static Tablero cargarTablero(String rutaArchivo) {
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(rutaArchivo))) {
+            Tablero tableroCargado = (Tablero) in.readObject();
+
+            // Importante: Actualizar la instancia singleton
+            instance = tableroCargado;
+
+            System.out.println("Tablero cargado exitosamente desde: " + rutaArchivo);
+            return instance;
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Error al cargar el tablero: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Método readResolve para garantizar el Singleton durante la deserialización
+     *
+     * @return La instancia del tablero
+     */
+    private Object readResolve() throws ObjectStreamException {
+        return getInstance();
     }
 }
 
