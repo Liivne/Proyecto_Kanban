@@ -4,8 +4,6 @@ import org.udec.Modelo.Tarea;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
 
 /**
  * Panel personalizado que representa una tarea en la interfaz gráfica de usuario (GUI).
@@ -24,7 +22,6 @@ public class TareaPanel extends JPanel {
      * La tarea representada por este panel.
      */
     private Tarea tarea;
-
     /**
      * Crea un nuevo panel que representa una tarea.
      *
@@ -43,19 +40,10 @@ public class TareaPanel extends JPanel {
         add(labelMensaje);
 
         // Hacer el panel arrastrable, permitiendo que se transfiera el título de la tarea
-        setTransferHandler(new TransferHandler("text") {
-            @Override
-            public int getSourceActions(JComponent c) {
-                return TransferHandler.COPY; // Solo permite copiar el texto
-            }
 
-            @Override
-            public Transferable createTransferable(JComponent c) {
-                return new StringSelection(tarea.getTitulo()); // Transfiere el título de la tarea
-            }
-        });
+        }
     }
-}
+
 
 
 

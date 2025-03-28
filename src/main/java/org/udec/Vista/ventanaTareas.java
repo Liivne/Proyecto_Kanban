@@ -76,15 +76,7 @@ public class ventanaTareas extends JDialog {
         // Acción del botón Cancelar
         btnCancelar.addActionListener(e -> dispose());
     }
-    public JPanel crearPanelTarea(Tarea tarea) {
-        JPanel panelTarea = new JPanel();
-        panelTarea.setLayout(new BoxLayout(panelTarea, BoxLayout.Y_AXIS));
-        panelTarea.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
-        panelTarea.add(new JLabel("Título: " + tarea.getTitulo()));
-        panelTarea.add(new JLabel("Descripción: " + tarea.getMensaje()));
-        panelTarea.setPreferredSize(new Dimension(200, 100));
-        return panelTarea;
-    }
+
 }
 
 

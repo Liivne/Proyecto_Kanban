@@ -1,16 +1,11 @@
 package org.udec.Vista;
 
-import org.udec.Modelo.Columna;
 import org.udec.Modelo.EstadoTarea;
 import org.udec.Modelo.Tarea;
 import org.udec.Modelo.Tablero;
-
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -143,9 +138,10 @@ public class ventanaPrincipal extends JFrame {
         JPanel panelDestino = obtenerPanelSegunEstado(tarea);
         Component[] componentes = panelDestino.getComponents();
 
+        JPanel panelTarea = null;
         for (Component componente : componentes) {
             if (componente instanceof JPanel) {
-                JPanel panelTarea = (JPanel) componente;
+                panelTarea = (JPanel) componente;
                 // Verificar si el panel corresponde a la tarea a eliminar
                 JLabel labelTitulo = (JLabel) panelTarea.getComponent(0);
                 if (labelTitulo.getText().equals("Título: " + tarea.getTitulo())) {
@@ -162,9 +158,6 @@ public class ventanaPrincipal extends JFrame {
         // Actualizar el contador de tareas
         actualizarContadorTareas();
     }
-
-
-
 
     /**
      * Actualiza el contador de tareas mostrando el número total de tareas en el tablero.
@@ -200,8 +193,8 @@ public class ventanaPrincipal extends JFrame {
     }
 
     private void moverTareaADerecha(Tarea tarea) {
+        eliminarTarea(tarea);
         EstadoTarea estadoActual = tarea.getEstado();
-        EstadoTarea nuevoEstado;
 
         switch (estadoActual) {
             case EstadoTarea.POR_HACER:
@@ -222,6 +215,7 @@ public class ventanaPrincipal extends JFrame {
     }
 
     private void moverTareaAIzquierda(Tarea tarea) {
+        eliminarTarea(tarea);
         EstadoTarea estadoActual = tarea.getEstado();
         EstadoTarea nuevoEstado;
 
